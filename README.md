@@ -32,3 +32,6 @@ cscript.exe /Nologo tests.wsf tests\test_account.vbs
 
 # Roadmap
 The features of Steem-Js and Steem-Python will be brought in. 
+
+# Notice
+This library is under development. Beware.
