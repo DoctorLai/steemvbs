@@ -1,3 +1,7 @@
+' Include a VBScript Unit
+
+Option Explicit
+
 Sub Include(file)
 
 	Dim file_system_object, loaded_file, file_string
@@ -17,7 +21,7 @@ Sub Include(file)
 		wscript.echo "File not Found: " & file 
 		wscript.quit
 	End If
-	
+
 	Set file_system_object = Nothing
 	Set file_string = Nothing
 	Set loaded_file = nothing

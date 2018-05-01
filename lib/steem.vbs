@@ -47,7 +47,7 @@ Class Steem
 	End Sub		
 	
 	' post to Steem Node via MSXML.ServerXMLHTTP
-	Public Function Exec(Method, Paramers)
+	Public Function Exec(ByVal Method, ByVal Paramers)
 		' Error Handling
 		On Error Resume Next
 		
@@ -80,7 +80,7 @@ Class Steem
 	' get account
 	Public Function GetAccount(id)
 		Dim r
-		r = Trim(SteemIt.Exec("get_accounts", "justyy"))
+		r = Trim(Exec("get_accounts", "justyy"))
 		If r = Null Then
 			Set GetAccount = Null
 		Else 
@@ -94,6 +94,20 @@ Class Steem
 				Set GetAccount = Null
 			End If 
 		End If			
+	End Function
+	
+	' get_dynamic_global_properties
+	Public Function GetDynamicGlobalPeroperties()
+		Dim r
+		r = Trim(Exec("get_dynamic_global_properties", ""))
+		If r = Null Then
+			Set GetDynamicGlobalPeroperties = Null
+		Else 
+			Dim json
+			Set json = New VbsJson
+			Dim o
+			Set GetDynamicGlobalPeroperties = json.Decode(r)
+		End If	
 	End Function
 		
 End Class
