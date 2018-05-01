@@ -1,0 +1,20 @@
+<job id="SteemVBS">
+   <script language="VBScript" src="lib\include.vbs"/>
+   <script language="VBScript" src="lib\vbsjson.vbs"/>
+   <script language="VBScript" src="lib\steem.vbs"/>
+
+   <script language="VBScript">
+		Dim position, Args, inFile, file, GLOBAL_PATH
+
+		Set Args = WScript.Arguments 'Drag and Drop or Cmdline
+		For i = 0 To Args.Count - 1
+			inFile = Args(0)
+
+			position = InstrRev(inFile, "\")
+			file = right(inFile, len(inFile) - position)
+
+			GLOBAL_PATH = Left(inFile, InstrRev(inFile, "\"))
+			Include(file)
+		Next
+   </script>
+</job>
