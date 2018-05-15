@@ -4,12 +4,14 @@
 
 Option Explicit
 
+Const Version = "0.0.1"
 Const DefaultSteemAPINode = "https://api.steemit.com"
 
 Class Steem
 	
 	Private iNode
 	Private ErrorMessage
+	Private CachedAccountData
 		
 	' class constructor with parameters
 	Public Default Function Init(API_Node)
@@ -17,6 +19,11 @@ Class Steem
 		Set Init = Me		
 	End Function
 	
+	' get version
+	Public Function GetVersion
+		GetVersion = Version
+	End Function
+
 	' get error
 	Public Function GetError()
 		GetError = ErrorMessage
@@ -39,7 +46,13 @@ Class Steem
 	Private Sub Class_Initialize()
 		Node = DefaultSteemAPINode
 		ErrorMessage = ""
+		Set CachedAccountData = Nothing
 	End Sub
+	
+	' cached account
+	Public Property Get CachedAccount
+		CachedAccount = CachedAccountData
+	End Property
 	
 	' class destructor
 	Private Sub Class_Terminate()
@@ -80,9 +93,9 @@ Class Steem
 	' get account
 	Public Function GetAccount(id)
 		Dim r
-		r = Trim(Exec("get_accounts", "justyy"))
+		r = Trim(Exec("get_accounts", id))
 		If r = Null Then
-			Set GetAccount = Null
+			Set GetAccount = Nothing
 		Else 
 			Dim json
 			Set json = New VbsJson
@@ -90,10 +103,14 @@ Class Steem
 			Set o = json.Decode(r)
 			If Not IsEmpty(o("result")) Then
 				Set GetAccount = o("result")(0)
+				Set CachedAccountData = o("result")(0)
 			Else 
-				Set GetAccount = Null
+				Set GetAccount = Nothing
+				Set CachedAccountData = Nothing
 			End If 
-		End If			
+			Set json = Nothing
+			Set o = Nothing
+		End If					
 	End Function
 	
 	' get_dynamic_global_properties
@@ -109,5 +126,46 @@ Class Steem
 			Set GetDynamicGlobalPeroperties = json.Decode(r)
 		End If	
 	End Function
+	
+	' check cache
+	Private Function CacheAvailable(id)
+		If CachedAccountData is Nothing Then
+			CacheAvailable = False
+			Exit Function
+		End If
+		CacheAvailable = LCase(id) = LCase(CachedAccountData("name"))
+	End Function
+	
+	' get witness votes
+	Public Function GetAccount_WitnessVotes(id)
+		Dim acc
+		If CacheAvailable(id) Then			
+			Set acc = CachedAccountData
+		Else
+			Set acc = GetAccount(id)			
+		End If 
+		GetAccount_WitnessVotes = acc("witness_votes")
+	End Function
+	
+	' get profile text string
+	Public Function GetAccount_Profile(id)
+		Dim acc
+		If CacheAvailable(id) Then			
+			Set acc = CachedAccountData
+		Else
+			Set acc = GetAccount(id)
+		End If 
+		Dim json
+		Set json = New VbsJson		
+		Dim o		
+		Set o = json.Decode(acc("json_metadata"))		
+		If Not IsEmpty(o) Then 
+			GetAccount_Profile = o("profile")("about")
+		Else
+			GetAccount_Profile = ""
+		End If 
+		Set o = Nothing
+		Set json = Nothing
+	End Function	
 		
 End Class

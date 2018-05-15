@@ -1,7 +1,9 @@
 <job id="SteemVBS">
    <script language="VBScript" src="lib\include.vbs"/>
+   <script language="VBScript" src="lib\utility.vbs"/>
    <script language="VBScript" src="lib\vbsjson.vbs"/>
    <script language="VBScript" src="lib\steem.vbs"/>
+   <script language="VBScript" src="lib\formatter.vbs"/>
    <script language="VBScript" src="lib\vbs_unit.vbs"/>
 
    <script language="VBScript">
