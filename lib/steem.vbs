@@ -12,6 +12,7 @@ Class Steem
 	Private iNode
 	Private ErrorMessage
 	Private CachedAccountData
+	Private UseCache
 		
 	' class constructor with parameters
 	Public Default Function Init(API_Node)
@@ -47,8 +48,19 @@ Class Steem
 		Node = DefaultSteemAPINode
 		ErrorMessage = ""
 		Set CachedAccountData = Nothing
+		Cache = True
 	End Sub
 	
+	' should we use cache
+	Public Property Let Cache(ByVal v)
+		UseCache = v
+	End Property
+	
+	' should we use cache
+	Public Property Get Cache
+		Cache = UseCache
+	End Property
+			
 	' cached account
 	Public Property Get CachedAccount
 		CachedAccount = CachedAccountData
@@ -129,6 +141,11 @@ Class Steem
 	
 	' check cache
 	Private Function CacheAvailable(id)
+		' disable cache manually
+		If Cache = False Then
+			CacheAvailable = False
+			Exit Function
+		End If
 		If CachedAccountData is Nothing Then
 			CacheAvailable = False
 			Exit Function
@@ -167,5 +184,83 @@ Class Steem
 		Set o = Nothing
 		Set json = Nothing
 	End Function	
-		
+	
+	' get voting power
+	Public Function GetAccount_VotingPower(id)
+		Dim acc
+		If CacheAvailable(id) Then			
+			Set acc = CachedAccountData
+		Else
+			Set acc = GetAccount(id)
+		End If 	
+		Dim vp, last_vote_time, sec
+		vp = acc("voting_power")
+		last_vote_time = Replace(acc("last_vote_time"), "T", " ")
+		sec = DateDiff("s", last_vote_time, Now)
+		Dim regen
+		regen = sec * 10000 / 86400 / 5
+		Dim total_vp
+		total_vp = (vp + regen) / 100
+		If total_vp >= 100 Then
+			total_vp = 100
+		End If 
+		GetAccount_VotingPower = total_vp
+	End Function		
+	
+	' get vesting shares
+	Public Function GetAccount_VestingShares(id)
+		Dim acc
+		If CacheAvailable(id) Then			
+			Set acc = CachedAccountData
+		Else
+			Set acc = GetAccount(id)
+		End If 	
+		GetAccount_VestingShares = Replace(acc("vesting_shares"), " VESTS", "")
+	End Function
+	
+	' get delegated vesting shares
+	Public Function GetAccount_DelegatedVestingShares(id)
+		Dim acc
+		If CacheAvailable(id) Then			
+			Set acc = CachedAccountData
+		Else
+			Set acc = GetAccount(id)
+		End If 	
+		GetAccount_DelegatedVestingShares = Replace(acc("delegated_vesting_shares"), " VESTS", "")
+	End Function	
+	
+	' get received_vesting_shares
+	Public Function GetAccount_ReceivedVestingShares(id)
+		Dim acc
+		If CacheAvailable(id) Then			
+			Set acc = CachedAccountData
+		Else
+			Set acc = GetAccount(id)
+		End If 	
+		GetAccount_ReceivedVestingShares = Replace(acc("received_vesting_shares"), " VESTS", "")
+	End Function	
+	
+	' convert vests to sp
+	Public Function VestsToSp(vests)
+		'TODO, use real data
+		VestsToSp = vests / 2038
+	End Function
+	
+	' get effective sp
+	Public Function GetAccount_EffectiveSteemPower(id)
+		Dim vests, vests_plus, vests_minus
+		Dim sp, sp_plus, sp_minus
+		' account owns
+		vests = GetAccount_VestingShares(id)
+		' received
+		vests_plus = GetAccount_ReceivedVestingShares(id)
+		' delegated
+		vests_minus = GetAccount_DelegatedVestingShares(id)
+		' convert to steem power
+		sp = VestsToSp(vests)
+		sp_plus = VestsToSp(vests_plus)
+		sp_minus = VestsToSp(vests_minus)
+		' simple math
+		GetAccount_EffectiveSteemPower = sp + sp_plus - sp_minus
+	End Function
 End Class

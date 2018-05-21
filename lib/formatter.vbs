@@ -17,6 +17,6 @@ Class Formatter
 			v = -v
 		End If
 		Reputation = v * 9 + 25
-	End Function
+	End Function	
 	
 End Class
