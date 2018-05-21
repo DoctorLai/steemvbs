@@ -62,6 +62,119 @@ witness = SteemIt.GetAccount_WitnessVotes("justyy")
 AssertTrue Util.InArray("abit", witness), "justyy should vote abit"
 ```
 
+## Adding Real time Voting Power
+```
+' test GetAccount_VotingPower
+
+Dim SteemIt
+Set SteemIt = New Steem
+
+Dim vp
+vp = SteemIt.GetAccount_VotingPower("justyy")
+
+AssertTrue vp >= 60 And vp <= 100, "justyy vp should be between 60 and 100"
+
+Set SteemIt = Nothing
+```
+
+## Adding Account Effective Steem Power
+```
+' test GetAccount_EffectiveSteemPower
+
+Dim SteemIt
+Set SteemIt = New Steem
+
+Dim esp
+esp = SteemIt.GetAccount_EffectiveSteemPower("justyy")
+
+WScript.Echo esp
+AssertTrue esp >= 20000, "justyy esp should be larger than 20000"
+
+Set SteemIt = Nothing
+```
+
+## Adding CreateSuggestedPassword
+```
+Dim x
+Set x = New Utility
+
+WScript.Echo x.CreateSuggestedPassword
+
+Set x = Nothing
+```
+
+## GetUrlFromCommentPermLink
+This function returns the steem post url given a comment url
+
+```
+' Test GetUrlFromCommentPermLink
+
+Dim x
+Set x = New Utility
+
+AssertEqual x.GetUrlFromCommentPermLink("re-tvb-re-justyy-re-tvb-45qr3w-20171011t144205534z"), "https://steemit.com/@tvb/45qr3w", ""
+
+AssertEqual x.GetUrlFromCommentPermLink("re-justyy-daily-quality-cn-posts-selected-and-rewarded-promo-cn-20180520t153728557z"), "https://steemit.com/@justyy/daily-quality-cn-posts-selected-and-rewarded-promo-cn", ""
+
+Set x = Nothing
+```
+
+## Vests to Steem Power
+```
+Dim SteemIt
+Set SteemIt = New Steem
+
+WScript.Echo SteemIt.VestsToSp(1234234)
+
+Set SteemIt = Nothing
+```
+
+## Invalidate Cache
+```
+Dim SteemIt
+Set SteemIt = New Steem
+
+' fresh
+WScript.Echo SteemIt.GetAccount_VotingPower("justyy")
+' cached
+WScript.Echo SteemIt.GetAccount_VotingPower("justyy")
+' do not use cache
+SteemIt.Cache = False
+WScript.Echo SteemIt.GetAccount_VotingPower("justyy")
+
+Set SteemIt = Nothing
+```
+
+## Vests
+```
+Dim SteemIt
+Set SteemIt = New Steem
+
+WScript.Echo SteemIt.GetAccount_VestingShares("justyy")
+
+Set SteemIt = Nothing
+```
+
+## Delegated Vests
+```
+Dim SteemIt
+Set SteemIt = New Steem
+
+WScript.Echo SteemIt.GetAccount_DelegatedVestingShares("justyy")
+
+Set SteemIt = Nothing
+```
+
+## Received Vests
+```
+Dim SteemIt
+Set SteemIt = New Steem
+
+WScript.Echo SteemIt.GetAccount_ReceivedVestingShares("justyy")
+
+Set SteemIt = Nothing
+```
+
 # Unit Tests
 Unit tests can be run via
 
