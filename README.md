@@ -255,6 +255,8 @@ cscript.exe /Nologo tests.wsf tests\test_account.vbs
 
 or you can call `run_tests.cmd` to run all tests in the test folder `tests`.
 
+![](https://github.com/DoctorLai/steemvbs/blob/master/run_tests.jpg?raw=true)
+
 # Roadmap
 The features of Steem-Js and Steem-Python will be brought in. 
 
