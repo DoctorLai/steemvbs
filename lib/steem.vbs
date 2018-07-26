@@ -271,6 +271,7 @@ Class Steem
 		GetAccount_EffectiveSteemPower = sp + sp_plus - sp_minus
 	End Function
 	
+	' call api from steemdb
 	Private Function Exec_SteemDB(ByVal method, ByVal parameters)
 		Dim URL
 		URL = "https://steemdb.com/api/" + Trim(method) + "?" + Trim(parameters)
@@ -302,10 +303,28 @@ Class Steem
 		On Error Goto 0 		
 	End Function
 	
+	' check cache for steemdb
+	Private Function CacheAvailableSteemDB(id)
+		' disable cache manually
+		If Cache = False Then
+			CacheAvailableSteemDB = False
+			Exit Function
+		End If
+		If CachedAccountData_SteemDB is Nothing Then
+			CacheAvailableSteemDB = False
+			Exit Function
+		End If
+		CacheAvailableSteemDB = LCase(id) = LCase(CachedAccountData_SteemDB(0)("_id"))
+	End Function
+		
 	' get followers list
 	Public Function GetAccount_Followers(ByVal id)
 		Dim r
-		r = Trim(Exec_SteemDB("accounts", "account=" + id))
+		If CacheAvailableSteemDB(id) Then
+			r = CachedAccountData_SteemDB
+		Else 
+			r = Trim(Exec_SteemDB("accounts", "account=" + id))
+		End If 
 		If r = Null Then
 			Set GetAccount_Followers = Nothing
 		Else 
@@ -315,7 +334,7 @@ Class Steem
 			o = json.Decode(r)
 			If Not IsEmpty(o(0)("followers")) Then				
 				GetAccount_Followers = o(0)("followers")
-				CachedAccountData_SteemDB = o(0)("followers")
+				CachedAccountData_SteemDB = o
 			Else 
 				GetAccount_Followers = Nothing
 				CachedAccountData_SteemDB = Nothing
@@ -324,4 +343,31 @@ Class Steem
 			Set o = Nothing
 		End If		
 	End Function		
+	
+	' get following list
+	Public Function GetAccount_Following(ByVal id)
+		Dim r
+		If CacheAvailableSteemDB(id) Then
+			r = CachedAccountData_SteemDB
+		Else 
+			r = Trim(Exec_SteemDB("accounts", "account=" + id))
+		End If 
+		If r = Null Then
+			Set GetAccount_Followers = Nothing
+		Else 
+			Dim json
+			Set json = New VbsJson
+			Dim o		
+			o = json.Decode(r)
+			If Not IsEmpty(o(0)("followers")) Then				
+				GetAccount_Followers = o(0)("followers")
+				CachedAccountData_SteemDB = o
+			Else 
+				GetAccount_Followers = Nothing
+				CachedAccountData_SteemDB = Nothing
+			End If 
+			Set json = Nothing
+			Set o = Nothing
+		End If		
+	End Function	
 End Class
