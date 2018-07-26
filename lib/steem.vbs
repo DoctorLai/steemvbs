@@ -425,7 +425,7 @@ Class Steem
 		End If		
 	End Function	
 	
-	' get followers count
+	' get followers mvest
 	Public Function GetAccount_FollowersMVest(ByVal id)
 		Dim r
 		If CacheAvailableSteemDB(id) Then
@@ -451,4 +451,31 @@ Class Steem
 			Set o = Nothing
 		End If		
 	End Function	
+	
+	' get recovery_account
+	Public Function GetAccount_Recovery(ByVal id)
+		Dim r
+		If CacheAvailableSteemDB(id) Then
+			r = CachedAccountData_SteemDB
+		Else 
+			r = Trim(Exec_SteemDB("accounts", "account=" + id))
+		End If 		
+		If IsNull(r) Then
+			Set GetAccount_Recovery = Nothing
+		Else 
+			Dim json
+			Set json = New VbsJson
+			Dim o		
+			o = json.Decode(r)
+			If Not IsEmpty(o(0)("recovery_account")) Then				
+				GetAccount_Recovery = o(0)("recovery_account")
+				CachedAccountData_SteemDB = r
+			Else 
+				GetAccount_Recovery = Nothing
+				Set CachedAccountData_SteemDB = Nothing
+			End If 
+			Set json = Nothing
+			Set o = Nothing
+		End If		
+	End Function		
 End Class
