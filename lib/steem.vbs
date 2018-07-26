@@ -49,7 +49,7 @@ Class Steem
 		Node = DefaultSteemAPINode
 		ErrorMessage = ""
 		Set CachedAccountData = Nothing
-		Set CachedAccountData_SteemDB = Nothing
+		CachedAccountData_SteemDB = Null
 		Cache = True
 	End Sub
 	
@@ -113,7 +113,7 @@ Class Steem
 	Public Function GetAccount(id)
 		Dim r
 		r = Trim(Exec("get_accounts", id))
-		If r = Null Then
+		If IsNull(r) Then
 			Set GetAccount = Nothing
 		Else 
 			Dim json
@@ -136,7 +136,7 @@ Class Steem
 	Public Function GetDynamicGlobalPeroperties()
 		Dim r
 		r = Trim(Exec("get_dynamic_global_properties", ""))
-		If r = Null Then
+		If IsNull(r) Then
 			Set GetDynamicGlobalPeroperties = Null
 		Else 
 			Dim json
@@ -310,11 +310,11 @@ Class Steem
 			CacheAvailableSteemDB = False
 			Exit Function
 		End If
-		If CachedAccountData_SteemDB is Nothing Then
+		If IsNull(CachedAccountData_SteemDB) Then
 			CacheAvailableSteemDB = False
 			Exit Function
 		End If
-		CacheAvailableSteemDB = LCase(id) = LCase(CachedAccountData_SteemDB(0)("_id"))
+		CacheAvailableSteemDB = True
 	End Function
 		
 	' get followers list
@@ -325,7 +325,7 @@ Class Steem
 		Else 
 			r = Trim(Exec_SteemDB("accounts", "account=" + id))
 		End If 
-		If r = Null Then
+		If IsNull(r) Then
 			Set GetAccount_Followers = Nothing
 		Else 
 			Dim json
@@ -334,10 +334,10 @@ Class Steem
 			o = json.Decode(r)
 			If Not IsEmpty(o(0)("followers")) Then				
 				GetAccount_Followers = o(0)("followers")
-				CachedAccountData_SteemDB = o
+				CachedAccountData_SteemDB = r
 			Else 
 				GetAccount_Followers = Nothing
-				CachedAccountData_SteemDB = Nothing
+				Set CachedAccountData_SteemDB = Nothing
 			End If 
 			Set json = Nothing
 			Set o = Nothing
@@ -352,7 +352,7 @@ Class Steem
 		Else 
 			r = Trim(Exec_SteemDB("accounts", "account=" + id))
 		End If 
-		If r = Null Then
+		If IsNull(r) Then
 			Set GetAccount_Following = Nothing
 		Else 
 			Dim json
@@ -361,10 +361,64 @@ Class Steem
 			o = json.Decode(r)
 			If Not IsEmpty(o(0)("following")) Then				
 				GetAccount_Following = o(0)("following")
-				CachedAccountData_SteemDB = o
+				CachedAccountData_SteemDB = r
 			Else 
 				GetAccount_Following = Nothing
-				CachedAccountData_SteemDB = Nothing
+				Set CachedAccountData_SteemDB = Nothing
+			End If 
+			Set json = Nothing
+			Set o = Nothing
+		End If		
+	End Function	
+	
+	' get following count
+	Public Function GetAccount_FollowingCount(ByVal id)
+		Dim r
+		If CacheAvailableSteemDB(id) Then
+			r = CachedAccountData_SteemDB
+		Else 
+			r = Trim(Exec_SteemDB("accounts", "account=" + id))
+		End If 
+		If IsNull(r) Then
+			Set GetAccount_FollowingCount = Nothing
+		Else 
+			Dim json
+			Set json = New VbsJson
+			Dim o		
+			o = json.Decode(r)
+			If Not IsEmpty(o(0)("following_count")) Then				
+				GetAccount_FollowingCount = o(0)("following_count")
+				CachedAccountData_SteemDB = r
+			Else 
+				GetAccount_FollowingCount = Nothing
+				Set CachedAccountData_SteemDB = Nothing
+			End If 
+			Set json = Nothing
+			Set o = Nothing
+		End If		
+	End Function	
+	
+	' get followers count
+	Public Function GetAccount_FollowersCount(ByVal id)
+		Dim r
+		If CacheAvailableSteemDB(id) Then
+			r = CachedAccountData_SteemDB
+		Else 
+			r = Trim(Exec_SteemDB("accounts", "account=" + id))
+		End If 		
+		If IsNull(r) Then
+			Set GetAccount_FollowersCount = Nothing
+		Else 
+			Dim json
+			Set json = New VbsJson
+			Dim o		
+			o = json.Decode(r)
+			If Not IsEmpty(o(0)("followers_count")) Then				
+				GetAccount_FollowersCount = o(0)("followers_count")
+				CachedAccountData_SteemDB = r
+			Else 
+				GetAccount_FollowersCount = Nothing
+				Set CachedAccountData_SteemDB = Nothing
 			End If 
 			Set json = Nothing
 			Set o = Nothing

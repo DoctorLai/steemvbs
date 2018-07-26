@@ -1,4 +1,4 @@
-' test GetAccount_Followers
+' test GetAccount_Following
 
 Dim SteemIt
 Set SteemIt = New Steem
