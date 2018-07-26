@@ -175,6 +175,77 @@ WScript.Echo SteemIt.GetAccount_ReceivedVestingShares("justyy")
 Set SteemIt = Nothing
 ```
 
+## GetAccount_Recovery
+```
+Dim SteemIt
+Set SteemIt = New Steem
+
+Dim re
+re = SteemIt.GetAccount_Recovery("justyy")
+
+AssertTrue re = "steem", "justyy's account recovery is not steem."
+
+Set SteemIt = Nothing
+```
+
+## GetAccount_Followers
+```
+Dim SteemIt
+Set SteemIt = New Steem
+
+Dim Util
+Set Util = New Utility
+
+Dim followers
+followers = SteemIt.GetAccount_Followers("justyy")
+
+AssertTrue Util.InArray("ericet", followers), "ericet should follow justyy"
+
+Set SteemIt = Nothing
+Set Util = Nothing
+```
+
+## GetAccount_Following
+```
+' test GetAccount_Following
+
+Dim SteemIt
+Set SteemIt = New Steem
+
+Dim Util
+Set Util = New Utility
+
+Dim followers
+followers = SteemIt.GetAccount_Following("justyy")
+
+AssertTrue Util.InArray("abit", followers), "justyy should follow abit"
+AssertTrue Util.InArray("ericet", followers), "justyy should follow ericet"
+```
+
+## GetAccount_FollowingCount And GetAccount_FollowersCount
+```
+Dim SteemIt
+Set SteemIt = New Steem
+
+Dim c1, c2
+c1 = SteemIt.GetAccount_FollowingCount("justyy")
+c2 = SteemIt.GetAccount_FollowersCount("justyy")
+
+AssertTrue c1 < c2, "GetAccount_FollowingCount < GetAccount_FollowersCount"
+AssertTrue c1 > 100, "GetAccount_FollowingCount > 100"
+AssertTrue c2 > 100, "GetAccount_FollowersCount > 100"
+```
+
+## GetAccount_FollowersMVest
+```
+Dim SteemIt
+Set SteemIt = New Steem
+
+Dim c1, c2
+c1 = SteemIt.GetAccount_FollowersMVest("justyy")
+AssertTrue c1 > 154101235.57696211338, "GetAccount_FollowersMVest > 154101235"
+```
+
 # Unit Tests
 Unit tests can be run via
 
