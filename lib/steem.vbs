@@ -12,6 +12,7 @@ Class Steem
 	Private iNode
 	Private ErrorMessage
 	Private CachedAccountData
+	Private CachedAccountData_SteemDB
 	Private UseCache
 		
 	' class constructor with parameters
@@ -48,6 +49,7 @@ Class Steem
 		Node = DefaultSteemAPINode
 		ErrorMessage = ""
 		Set CachedAccountData = Nothing
+		Set CachedAccountData_SteemDB = Nothing
 		Cache = True
 	End Sub
 	
@@ -64,6 +66,11 @@ Class Steem
 	' cached account
 	Public Property Get CachedAccount
 		CachedAccount = CachedAccountData
+	End Property
+	
+	' cached account for steemdb
+	Public Property Get CachedAccountSteemDB
+		CachedAccountSteemDB = CachedAccountData_SteemDB
 	End Property
 	
 	' class destructor
@@ -94,7 +101,7 @@ Class Steem
 			xmlhttp.send "{""jsonrpc"":""2.0"",""method"":""" + Method + """,""params"":[[""" + Paramers + """]],""id"":""0""}"
 			
 			' Return JSON Text
-			Exec = xmlhttp.responseText		
+			Exec = Trim(xmlhttp.responseText)
 		End If		
 		
 		Set xmlhttp = Nothing	
@@ -263,4 +270,58 @@ Class Steem
 		' simple math
 		GetAccount_EffectiveSteemPower = sp + sp_plus - sp_minus
 	End Function
+	
+	Private Function Exec_SteemDB(ByVal method, ByVal parameters)
+		Dim URL
+		URL = "https://steemdb.com/api/" + Trim(method) + "?" + Trim(parameters)
+		
+		' Error Handling
+		On Error Resume Next
+		
+		Dim xmlhttp		
+		Set xmlhttp = CreateObject("MSXML2.ServerXMLHTTP")
+		
+		' Indicate that page that will receive the request and the
+		' type of request being submitted
+		xmlhttp.open "Get", URL, False
+		
+		'handle errors
+		If Err Then            
+			ErrorMessage = Err.Description & " [0x" & Hex(Err.Number) & "]"
+			Exec_SteemDB = Null
+		Else
+			' call the api
+			xmlhttp.send
+			
+			' Return JSON Text
+			Exec_SteemDB = Trim(xmlhttp.responseText)
+		End If		
+		
+		Set xmlhttp = Nothing	
+		'disable error handling again
+		On Error Goto 0 		
+	End Function
+	
+	' get followers list
+	Public Function GetAccount_Followers(ByVal id)
+		Dim r
+		r = Trim(Exec_SteemDB("accounts", "account=" + id))
+		If r = Null Then
+			Set GetAccount_Followers = Nothing
+		Else 
+			Dim json
+			Set json = New VbsJson
+			Dim o		
+			o = json.Decode(r)
+			If Not IsEmpty(o(0)("followers")) Then				
+				GetAccount_Followers = o(0)("followers")
+				CachedAccountData_SteemDB = o(0)("followers")
+			Else 
+				GetAccount_Followers = Nothing
+				CachedAccountData_SteemDB = Nothing
+			End If 
+			Set json = Nothing
+			Set o = Nothing
+		End If		
+	End Function		
 End Class
