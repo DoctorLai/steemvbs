@@ -353,17 +353,17 @@ Class Steem
 			r = Trim(Exec_SteemDB("accounts", "account=" + id))
 		End If 
 		If r = Null Then
-			Set GetAccount_Followers = Nothing
+			Set GetAccount_Following = Nothing
 		Else 
 			Dim json
 			Set json = New VbsJson
 			Dim o		
 			o = json.Decode(r)
-			If Not IsEmpty(o(0)("followers")) Then				
-				GetAccount_Followers = o(0)("followers")
+			If Not IsEmpty(o(0)("following")) Then				
+				GetAccount_Following = o(0)("following")
 				CachedAccountData_SteemDB = o
 			Else 
-				GetAccount_Followers = Nothing
+				GetAccount_Following = Nothing
 				CachedAccountData_SteemDB = Nothing
 			End If 
 			Set json = Nothing

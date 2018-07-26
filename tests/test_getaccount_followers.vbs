@@ -9,9 +9,7 @@ Set Util = New Utility
 Dim followers
 followers = SteemIt.GetAccount_Followers("justyy")
 
-AssertTrue Util.InArray("abit", followers), "justyy should follow abit"
-
-AssertTrue Util.InArray("ericet", followers), "justyy should follow ericet"
+AssertTrue Util.InArray("ericet", followers), "ericet should follow justyy"
 
 Set SteemIt = Nothing
 Set Util = Nothing
