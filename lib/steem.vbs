@@ -424,4 +424,31 @@ Class Steem
 			Set o = Nothing
 		End If		
 	End Function	
+	
+	' get followers count
+	Public Function GetAccount_FollowersMVest(ByVal id)
+		Dim r
+		If CacheAvailableSteemDB(id) Then
+			r = CachedAccountData_SteemDB
+		Else 
+			r = Trim(Exec_SteemDB("accounts", "account=" + id))
+		End If 		
+		If IsNull(r) Then
+			Set GetAccount_FollowersMVest = Nothing
+		Else 
+			Dim json
+			Set json = New VbsJson
+			Dim o		
+			o = json.Decode(r)
+			If Not IsEmpty(o(0)("followers_mvest")) Then				
+				GetAccount_FollowersMVest = o(0)("followers_mvest")
+				CachedAccountData_SteemDB = r
+			Else 
+				GetAccount_FollowersMVest = Nothing
+				Set CachedAccountData_SteemDB = Nothing
+			End If 
+			Set json = Nothing
+			Set o = Nothing
+		End If		
+	End Function	
 End Class
