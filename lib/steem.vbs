@@ -79,7 +79,7 @@ Class Steem
 	End Sub		
 	
 	' post to Steem Node via MSXML.ServerXMLHTTP
-	Public Function Exec(ByVal Method, ByVal Paramers)
+	Private Function Exec(ByVal Method, ByVal Paramers, ByVal id)
 		' Error Handling
 		On Error Resume Next
 		
@@ -98,7 +98,15 @@ Class Steem
 			xmlhttp.setRequestHeader "Content-Type", "application/json; charset=UTF-8"
 					
 			' Send the data
-			xmlhttp.send "{""jsonrpc"":""2.0"",""method"":""" + Method + """,""params"":[[""" + Paramers + """]],""id"":""0""}"
+			Dim postdata
+			postdata = "{""jsonrpc"":""2.0"",""method"":""" & Method & ""","
+			
+			If Paramers <> "" Then
+				postdata = postdata & """params"":[[""" & Paramers & """]],"				
+			End If 
+			
+			postdata = postdata & """id"":""" & id & """}"			
+			xmlhttp.send postdata
 			
 			' Return JSON Text
 			Exec = Trim(xmlhttp.responseText)
@@ -112,7 +120,7 @@ Class Steem
 	' get account
 	Public Function GetAccount(id)
 		Dim r
-		r = Trim(Exec("get_accounts", id))
+		r = Trim(Exec("get_accounts", id, 0))
 		If IsNull(r) Then
 			Set GetAccount = Nothing
 		Else 
@@ -135,7 +143,7 @@ Class Steem
 	' get_dynamic_global_properties
 	Public Function GetDynamicGlobalPeroperties()
 		Dim r
-		r = Trim(Exec("get_dynamic_global_properties", ""))
+		r = Trim(Exec("database_api.get_dynamic_global_properties", "", 1))
 		If IsNull(r) Then
 			Set GetDynamicGlobalPeroperties = Null
 		Else 
@@ -249,8 +257,7 @@ Class Steem
 	
 	' convert vests to sp
 	Public Function VestsToSp(vests)
-		'TODO, use real data
-		VestsToSp = vests / 2038
+		VestsToSp = vests / Steem_To_Vests(1)
 	End Function
 	
 	' get effective sp
@@ -477,5 +484,29 @@ Class Steem
 			Set json = Nothing
 			Set o = Nothing
 		End If		
-	End Function		
+	End Function	
+	
+	' steem_per_mvests
+	Public Function Steem_Per_MVests	
+		Dim r, rr
+		Set r = GetDynamicGlobalPeroperties()
+		If IsNull(r) Then
+			Steem_Per_MVests = Nothing
+			Exit Function
+		End If 
+		Set rr = r("result")
+		Steem_Per_MVests = rr("total_vesting_fund_steem")("amount") / (rr("total_vesting_shares")("amount") / 1e6)
+	End Function	
+	
+	' vests to steem
+	Public Function Vests_To_Steem(vests)
+		Dim spm
+		spm = Steem_Per_MVests()
+		Vests_To_Steem = vests / 1e3 * spm
+	End Function
+	
+	' steem to vests
+	Public Function Steem_To_Vests(Sp)
+		Steem_To_Vests = sp * 1e3 / Steem_Per_MVests
+	End Function
 End Class
