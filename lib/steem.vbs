@@ -102,10 +102,14 @@ Class Steem
 			postdata = "{""jsonrpc"":""2.0"",""method"":""" & Method & ""","
 			
 			If Paramers <> "" Then
-				postdata = postdata & """params"":[[""" & Paramers & """]],"				
+				If InStr(Paramers, "[") = 0 Then
+					postdata = postdata & """params"":[[""" & Paramers & """]],"
+				Else
+					postdata = postdata & """params"":" & Paramers & ","
+				End If
 			End If 
 			
-			postdata = postdata & """id"":""" & id & """}"			
+			postdata = postdata & """id"":" & id & "}"	
 			xmlhttp.send postdata
 			
 			' Return JSON Text
@@ -141,9 +145,9 @@ Class Steem
 	End Function
 	
 	' get_dynamic_global_properties
-	Public Function GetDynamicGlobalPeroperties()
+	Public Function GetDynamicGlobalPeroperties(ByVal api, ByVal params, ByVal Id)
 		Dim r
-		r = Trim(Exec("database_api.get_dynamic_global_properties", "", 1))
+		r = Trim(Exec(api, params, Id))
 		If IsNull(r) Then
 			Set GetDynamicGlobalPeroperties = Null
 		Else 
@@ -489,7 +493,7 @@ Class Steem
 	' steem_per_mvests
 	Public Function Steem_Per_MVests	
 		Dim r, rr
-		Set r = GetDynamicGlobalPeroperties()
+		Set r = GetDynamicGlobalPeroperties("database_api.get_dynamic_global_properties", "", 1)
 		If IsNull(r) Then
 			Steem_Per_MVests = Nothing
 			Exit Function
@@ -508,5 +512,74 @@ Class Steem
 	' steem to vests
 	Public Function Steem_To_Vests(Sp)
 		Steem_To_Vests = sp * 1e3 / Steem_Per_MVests
+	End Function
+	
+	' get reward fund
+	Public Function GetRewardFund
+		Dim r, rr
+		Set r = GetDynamicGlobalPeroperties("call", "[""database_api"",""get_reward_fund"",[""post""]]", 0)
+		If IsNull(r) Then
+			GetRewardFund = Nothing
+			Exit Function
+		End If 
+		Set rr = r("result")
+		GetRewardFund = Replace(rr("reward_balance"), " STEEM", "")
+	End Function
+	
+	' get recent claims
+	Public Function GetRecentClaims
+		Dim r, rr
+		Set r = GetDynamicGlobalPeroperties("call", "[""database_api"",""get_reward_fund"",[""post""]]", 0)
+		If IsNull(r) Then
+			GetRewardFund = Nothing
+			Exit Function
+		End If 
+		Set rr = r("result")
+		GetRecentClaims = rr("recent_claims")
+	End Function
+		
+	' get account vests
+	Public Function GetAccountVests(id)
+		Dim r, rr
+		Set r = GetDynamicGlobalPeroperties("condenser_api.get_accounts", Trim(id), 1)
+		If IsNull(r) Then
+			GetAccountVests = Nothing
+			Exit Function
+		End If 
+		Set rr = r("result")(0)
+		GetAccountVests = CDbl(Replace(rr("vesting_shares"), " VESTS", "")) +_ 
+						  CDbl(Replace(rr("received_vesting_shares"), " VESTS", "")) -_
+						  CDbl(Replace(rr("delegated_vesting_shares")," VESTS", ""))
+	End Function
+	
+	' get current median history price
+	Public Function GetMedianPrice
+		Dim r, rr
+		Set r = GetDynamicGlobalPeroperties("call", "[""database_api"",""get_current_median_history_price"",[]]", 1)
+		If IsNull(r) Then
+			GetMedianPrice = Nothing
+			Exit Function
+		End If 
+		Set rr = r("result")
+		GetMedianPrice = Replace(rr("base"), " SBD", "") / Replace(rr("quote"), " STEEM", "")
+	End Function
+	
+	' get account upvote value
+	Public Function GetAccount_UpvoteValue(id, vp, weight)
+	    Dim power
+	    power = (100 * vp * 100 * weight / 1e4 + 49) / 50
+	    Dim total_vests
+	    total_vests = GetAccountVests(id)
+	    Dim final_vests
+	    final_vests = total_vests * 1e6
+	    Dim rshares
+	    rshares = power * final_vests / 1e4
+	    Dim rewards
+	    rewards = GetRewardFund
+	    Dim sbd_median_price
+	    sbd_median_price = GetMedianPrice
+	    Dim estimate
+	    estimate = rshares / GetRecentClaims * rewards * sbd_median_price
+	    GetAccount_UpvoteValue = estimate
 	End Function
 End Class
