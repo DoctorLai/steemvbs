@@ -7,11 +7,11 @@ Dim Util
 Set Util = New Utility
 
 Dim witness
-witness = SteemIt.GetAccount_WitnessVotes("justyy")
+witness = SteemIt.GetAccount_WitnessVotes("steemfuckeos")
 
-AssertTrue Util.InArray("abit", witness), "justyy should vote abit"
+AssertTrue Util.InArray("abit", witness), "steemfuckeos should vote abit"
 
-AssertTrue Util.InArray("jerrybanfield", witness), "justyy should vote jerrybanfield"
+AssertTrue Util.InArray("oflyhigh", witness), "steemfuckeos should vote oflyhigh"
 
 Set SteemIt = Nothing
 Set Util = Nothing
