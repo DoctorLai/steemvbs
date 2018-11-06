@@ -246,6 +246,46 @@ c1 = SteemIt.GetAccount_FollowersMVest("justyy")
 AssertTrue c1 > 154101235.57696211338, "GetAccount_FollowersMVest > 154101235"
 ```
 
+## Vests and Steem Conversion: Vests_To_Steem, Steem_Per_MVests and Steem_To_Vests
+```
+Dim SteemIt
+Set SteemIt = New Steem
+
+WScript.Echo SteemIt.Steem_Per_MVests
+WScript.Echo SteemIt.Vests_To_Steem(1)
+WScript.Echo SteemIt.Steem_To_Vests(1)
+```
+
+### GetRewardFund, GetMedianPrice, GetAccount_UpvoteValue
+```
+Dim SteemIt
+Set SteemIt = New Steem
+
+Dim fund
+fund = SteemIt.GetRewardFund
+AssertTrue fund > 0, "Rewards Pool should be larger than zero"
+
+Dim esp
+esp = SteemIt.Vests_To_Steem(SteemIt.GetAccountVests("justyy"))
+AssertTrue esp > 1000, "justyy's ESP should be at least 1000"
+
+Dim price
+price = SteemIt.GetMedianPrice
+AssertTrue price > 0, "median price should be larger than 0"
+
+Dim upvote_value, vp, voting_weight
+vp = 100
+voting_weight = 100
+upvote_value = SteemIt.GetAccount_UpvoteValue("justyy", vp, voting_weight)
+AssertTrue upvote_value > 0.1, "full vote value should be at least $0.1"
+
+Dim current_upvote_value
+current_upvote_value = SteemIt.GetAccount_UpvoteValue("justyy", 50, 20)
+AssertEqualFloat upvote_value * 0.5 * 0.2, current_upvote_value, 0.1, "current upvote value calculation error"
+
+Set SteemIt = Nothing
+```
+
 # Unit Tests
 Unit tests can be run via
 
